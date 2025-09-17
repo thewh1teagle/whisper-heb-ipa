@@ -21,4 +21,4 @@ ENV HOME=/app
 
 EXPOSE 7860
 
-CMD ["uv", "run", "app.py", "--model", "thewh1teagle/whisper-heb-ipa", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uv", "run", "app.py", "--model", "thewh1teagle/whisper-heb-ipa"]
