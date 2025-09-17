@@ -31,7 +31,7 @@ def main():
     parser.add_argument(
         "--model", 
         type=str, 
-        default="openai/whisper-small",
+        default="thewh1teagle/whisper-heb-ipa",
         help="Model name or path for Whisper (default: openai/whisper-small)"
     )
     args = parser.parse_args()
