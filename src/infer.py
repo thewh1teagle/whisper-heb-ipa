@@ -7,6 +7,9 @@ uv run src/infer.py
 
 # Or run with local checkpoint
 uv run src/infer.py --model_name ./whisper-heb-ipa/checkpoint-200
+
+# Or with whisper small
+uv run src/infer.py --model_name openai/whisper-small
 """
 
 import argparse
@@ -27,7 +30,8 @@ args = parser.parse_args()
 # Force task to avoid HFValidationError on local checkpoints
 pipe = pipeline(
     task="automatic-speech-recognition",
-    model=args.model_name
+    model=args.model_name,
+    generate_kwargs={"language": "he"}
 )
 
 def transcribe(audio):
@@ -53,7 +57,7 @@ def transcribe(audio):
 iface = gr.Interface(
     fn=transcribe, 
     inputs=gr.Audio(sources=["microphone", "upload"], type="numpy"),
-    outputs="text",
+    outputs=gr.Textbox(lines=10, max_lines=20, show_copy_button=True),
     title="Whisper Hebrew IPA",
     description="Realtime demo for Hebrew speech recognition using a fine-tuned Whisper Hebrew IPA model.",
 )
