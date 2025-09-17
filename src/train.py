@@ -10,6 +10,7 @@ uv run wandb login
 """
 
 import argparse
+import datasets
 import pandas as pd
 import torch
 from pathlib import Path
@@ -108,7 +109,7 @@ def main():
     
     # Load dataset from cache
     if Path(args.dataset_cache_path).exists():
-        dataset = Dataset.load_from_disk(args.dataset_cache_path)
+        dataset = datasets.load_from_disk(args.dataset_cache_path)
     else:
         # Load dataset
         dataset = load_dataset_from_csv(args.data_dir)
@@ -135,7 +136,9 @@ def main():
         per_device_eval_batch_size=8,
         learning_rate=args.learning_rate,
         max_steps=args.max_steps,
-        gradient_checkpointing=True,
+        # Gradient checkpointing is disabled to fix a "backward through the graph a second time" RuntimeError.
+        # This error occurs when gradient checkpointing is enabled alongside a custom data collator.
+        gradient_checkpointing=False,
         fp16=True,
         eval_strategy="steps",
         eval_steps=200,
