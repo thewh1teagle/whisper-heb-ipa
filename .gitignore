@@ -20,3 +20,4 @@ ilspeech_speaker2_v1/
 *.wma
 *.aac
 *.opus
+whisper-heb-ipa/
