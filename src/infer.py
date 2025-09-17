@@ -18,6 +18,10 @@ import torch
 from transformers import pipeline
 import gradio as gr
 import argparse
+from pydub import AudioSegment
+from pydub.effects import normalize
+import tempfile
+import os
 
 def main():
     parser = argparse.ArgumentParser(description="Whisper Transcription Demo")
@@ -41,11 +45,39 @@ def main():
         device=device,
     )
 
+    def normalize_audio(file_path):
+        """Normalize audio using pydub to improve transcription quality."""
+        try:
+            # Load audio file
+            audio = AudioSegment.from_file(file_path)
+            
+            # Normalize the audio (adjusts volume to optimal level)
+            normalized_audio = normalize(audio)
+            
+            # Create a temporary file for the normalized audio
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
+                normalized_audio.export(temp_file.name, format="wav")
+                return temp_file.name
+        except Exception as e:
+            print(f"Warning: Audio normalization failed: {e}")
+            # Return original file if normalization fails
+            return file_path
 
     def transcribe(file, task):
-        outputs = pipe(file, batch_size=BATCH_SIZE, generate_kwargs={"task": task})
-        text = outputs["text"]
-        return text
+        # Normalize the audio before transcription
+        normalized_file = normalize_audio(file)
+        
+        try:
+            outputs = pipe(normalized_file, batch_size=BATCH_SIZE, generate_kwargs={"task": task})
+            text = outputs["text"]
+            return text
+        finally:
+            # Clean up temporary normalized file if it was created
+            if normalized_file != file and os.path.exists(normalized_file):
+                try:
+                    os.unlink(normalized_file)
+                except Exception as e:
+                    print(f"Warning: Could not delete temporary file {normalized_file}: {e}")
 
     demo = gr.Blocks(
         css="""
