@@ -54,6 +54,12 @@ uv run hf upload --repo-type dataset thewh1teagle/whisper-heb-ipa-dataset ./data
 uv run hf download --repo-type dataset thewh1teagle/whisper-heb-ipa-dataset --local-dir ./dataset_cache
 ```
 
+## Upload model to HuggingFace
+
+```console
+uv run hf upload --repo-type model thewh1teagle/whisper-heb-ipa ./whisper-heb-ipa/checkpoint-9000
+```
+
 ## References
 
 - ivrit.ai whisper turbo https://huggingface.co/ivrit-ai/whisper-large-v3-turbo/tree/main

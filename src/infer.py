@@ -11,6 +11,9 @@ uv run src/infer.py --model ./whisper-heb-ipa/checkpoint-600
 
 # Or with whisper small
 uv run src/infer.py --model openai/whisper-small
+
+# Or with thewh1teagle/whisper-heb-ipa
+uv run src/infer.py --model thewh1teagle/whisper-heb-ipa
 """
 
 
