@@ -22,3 +22,4 @@ ilspeech_speaker2_v1/
 *.opus
 whisper-heb-ipa/
 dataset_cache/
+wandb/
