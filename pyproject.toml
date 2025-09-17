@@ -1,0 +1,17 @@
+[project]
+name = "whisper-heb-ipa"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "accelerate>=1.10.1",
+    "datasets[audio]>=4.1.0",
+    "evaluate>=0.4.5",
+    "gradio>=5.46.0",
+    "huggingface-hub>=0.35.0",
+    "jiwer>=4.0.0",
+    "pandas>=2.3.2",
+    "tensorboard>=2.20.0",
+    "transformers>=4.56.1",
+]
