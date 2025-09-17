@@ -47,7 +47,14 @@ def main():
         text = outputs["text"]
         return text
 
-    demo = gr.Blocks()
+    demo = gr.Blocks(
+        css="""
+        .large-textbox textarea {
+            font-size: 20px !important;
+            line-height: 1.6 !important;
+        }
+        """
+    )
 
     mic_transcribe = gr.Interface(
         fn=transcribe,
@@ -55,7 +62,15 @@ def main():
             gr.Audio(sources=["microphone", "upload"], type="filepath"),
             gr.Radio(["transcribe", "translate"], label="Task", value="transcribe"),
         ],
-        outputs="text",
+        outputs=gr.Textbox(
+            label="Transcription", 
+            lines=6, 
+            max_lines=15, 
+            min_width=400,
+            show_copy_button=True,
+            placeholder="Transcribed text will appear here...",
+            elem_classes=["large-textbox"]
+        ),
         theme="huggingface",
         title="Whisper Demo: Transcribe Audio",
         description=(
@@ -72,7 +87,15 @@ def main():
             gr.Audio(sources=["upload"], label="Audio file", type="filepath"),
             gr.Radio(["transcribe", "translate"], label="Task", value="transcribe"),
         ],
-        outputs="text",
+        outputs=gr.Textbox(
+            label="Transcription", 
+            lines=6, 
+            max_lines=15, 
+            min_width=400,
+            show_copy_button=True,
+            placeholder="Transcribed text will appear here...",
+            elem_classes=["large-textbox"]
+        ),
         theme="huggingface",
         title="Whisper Demo: Transcribe Audio",
         description=(
