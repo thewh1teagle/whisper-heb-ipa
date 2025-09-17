@@ -33,6 +33,7 @@ parser.add_argument("--batch_size", type=int, default=16)
 parser.add_argument("--learning_rate", type=float, default=1e-5)
 parser.add_argument("--max_steps", type=int, default=1000)
 parser.add_argument("--report_to", type=str, default="tensorboard", choices=["wandb", "tensorboard"])
+parser.add_argument("--dataset_cache_path", type=str, default="./dataset_cache")
 args = parser.parse_args()
 
 @dataclass
@@ -105,15 +106,21 @@ def main():
     model.generation_config.task = "transcribe"
     model.generation_config.forced_decoder_ids = None # Deprecated
     
-    # Load dataset
-    dataset = load_dataset_from_csv(args.data_dir)
+    # Load dataset from cache
+    if Path(args.dataset_cache_path).exists():
+        dataset = Dataset.load_from_disk(args.dataset_cache_path)
+    else:
+        # Load dataset
+        dataset = load_dataset_from_csv(args.data_dir)
     
-    # Prepare dataset
-    dataset = dataset.map(
-        lambda batch: prepare_dataset(batch, processor),
-        remove_columns=dataset["train"].column_names,
-        num_proc=min(6, os.cpu_count()) # limit to 16 processes
-    )
+        # Prepare dataset
+        dataset = dataset.map(
+            lambda batch: prepare_dataset(batch, processor),
+            remove_columns=dataset["train"].column_names,
+            num_proc=min(6, os.cpu_count()) # limit to 16 processes
+        )
+
+        dataset.save_to_disk(args.dataset_cache_path)
     
     # Data collator
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(
