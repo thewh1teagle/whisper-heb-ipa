@@ -47,6 +47,13 @@ uv run src/train.py --report_to wandb # it will print the URL to the wandb dashb
 uv run wandb sync ./whisper-heb-ipa
 ```
 
+## Upload/Download dadtaset cache
+
+```console
+uv run hf upload --repo-type dataset thewh1teagle/whisper-heb-ipa-dataset ./dataset_cache
+uv run hf download --repo-type dataset thewh1teagle/whisper-heb-ipa-dataset ./dataset_cache
+```
+
 ## References
 
 - ivrit.ai whisper turbo https://huggingface.co/ivrit-ai/whisper-large-v3-turbo/tree/main
