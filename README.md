@@ -69,3 +69,9 @@ uv run hf upload --repo-type model thewh1teagle/whisper-heb-ipa ./whisper-heb-ip
 ## Gotchas
 
 - https://huggingface.co/openai/whisper-large-v3/discussions/201
+- To infer on macOS:
+
+```console
+uv pip uninstall torchcodec
+uv run --no-sync src/infer.py
+```
