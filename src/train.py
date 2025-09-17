@@ -23,6 +23,7 @@ from transformers import (
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
 import evaluate
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_dir", type=str, required=True)
@@ -111,7 +112,7 @@ def main():
     dataset = dataset.map(
         lambda batch: prepare_dataset(batch, processor),
         remove_columns=dataset["train"].column_names,
-        num_proc=1
+        num_proc=min(6, os.cpu_count()) # limit to 16 processes
     )
     
     # Data collator
@@ -129,7 +130,7 @@ def main():
         max_steps=args.max_steps,
         gradient_checkpointing=True,
         fp16=True,
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         eval_steps=200,
         save_steps=200,
         logging_steps=25,

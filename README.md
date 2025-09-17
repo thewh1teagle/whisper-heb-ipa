@@ -34,6 +34,12 @@ with tensorboard:
 uv run tensorboard --logdir whisper-heb-ipa
 ```
 
+with wandb:
+
+```console
+uv run src/train.py --report_to wandb # it will print the URL to the wandb dashboard
+```
+
 ## References
 
 - ivrit.ai whisper turbo https://huggingface.co/ivrit-ai/whisper-large-v3-turbo/tree/main
