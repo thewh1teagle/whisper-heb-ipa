@@ -26,9 +26,7 @@ jobs:
           cd $SPACE_NAME
           cp -rf ../requirements.txt .
           cp -rf ../src/infer.py app.py
-
-          # Prepare ffmpeg
-          echo "ffmpeg" > packages.txt
+          cp -rf ../.github/Dockerfile.hf_space Dockerfile
 
           # Prepare README
           cat > README.md <<EOL
