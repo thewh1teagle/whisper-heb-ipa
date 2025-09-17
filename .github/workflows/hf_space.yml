@@ -30,6 +30,20 @@ jobs:
           # Prepare ffmpeg
           echo "ffmpeg" > packages.txt
 
+          # Prepare README
+          cat > README.md <<EOL
+          ---
+          title: Transcribe Hebrew Speech into IPA
+          emoji: 🎙️
+          colorFrom: red
+          colorTo: blue
+          sdk: gradio
+          sdk_version: "5.45.0"
+          app_file: app.py
+          pinned: false
+          ---
+          EOL
+
           # Git
           rm -rf .git
           rm -rf .gitignore
