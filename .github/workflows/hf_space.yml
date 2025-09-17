@@ -24,10 +24,10 @@ jobs:
           # Prepare space
           mkdir $SPACE_NAME
           cd $SPACE_NAME
-          cp -rf ../requirements.txt .
-          cp -rf ../src/infer.py app.py
-          cp -rf ../example1.wav .
-          cp -rf ../.github/Dockerfile.hf_space Dockerfile
+          cp -f ../requirements.txt .
+          cp -f ../src/infer.py app.py
+          cp -f ../example1.wav .
+          cp -f ../.github/Dockerfile.hf_space Dockerfile
 
           # Prepare README
           cat > README.md <<EOL
