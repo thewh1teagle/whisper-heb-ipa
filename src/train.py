@@ -103,7 +103,7 @@ def main():
     # Set generation config
     model.generation_config.language = "hebrew"
     model.generation_config.task = "transcribe"
-    model.generation_config.forced_decoder_ids = None
+    model.generation_config.forced_decoder_ids = None # Deprecated
     
     # Load dataset
     dataset = load_dataset_from_csv(args.data_dir)
