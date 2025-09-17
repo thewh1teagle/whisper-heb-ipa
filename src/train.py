@@ -3,7 +3,7 @@ To train the model:
 uv run src/train.py --data_dir data --model_name openai/whisper-small --output_dir whisper-heb-ipa --batch_size 16 --learning_rate 1e-5 --max_steps 1000
 OR
 export WANDB_PROJECT=whisper-heb-ipa
-uv run src/train.py --data_dir data --model_name openai/whisper-small --output_dir whisper-heb-ipa --batch_size 16 --learning_rate 1e-5 --max_steps 10000 --report_to wandb
+uv run src/train.py --data_dir data --model_name openai/whisper-small --output_dir whisper-heb-ipa --batch_size 16 --learning_rate 1e-5 --max_steps 90000 --report_to wandb
 
 To upload the model to the hub:
 uv run hf upload --repo-type model whisper-heb-ipa ./whisper-heb-ipa

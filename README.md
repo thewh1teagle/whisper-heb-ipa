@@ -51,7 +51,7 @@ uv run wandb sync ./whisper-heb-ipa
 
 ```console
 uv run hf upload --repo-type dataset thewh1teagle/whisper-heb-ipa-dataset ./dataset_cache
-uv run hf download --repo-type dataset thewh1teagle/whisper-heb-ipa-dataset ./dataset_cache
+uv run hf download --repo-type dataset thewh1teagle/whisper-heb-ipa-dataset --local-dir ./dataset_cache
 ```
 
 ## References
