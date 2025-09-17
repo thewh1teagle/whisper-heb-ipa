@@ -150,7 +150,7 @@ def main():
         eval_dataset=dataset["test"],
         data_collator=data_collator,
         compute_metrics=lambda pred: compute_metrics(pred, processor.tokenizer),
-        tokenizer=processor.feature_extractor,
+        tokenizer=processor,
     )
     
     # Train
