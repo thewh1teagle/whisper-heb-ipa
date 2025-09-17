@@ -44,10 +44,12 @@ jobs:
           EOL
 
           # Git
+          git lfs install
           rm -rf .git
           rm -rf .gitignore
 
           git init
+          git lfs track "*.wav"
           git branch -M main
           git config --global user.email "thewh1teagle"
           git config --global user.name "thewh1teagle"
