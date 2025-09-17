@@ -14,4 +14,5 @@ dependencies = [
     "pandas>=2.3.2",
     "tensorboard>=2.20.0",
     "transformers>=4.56.1",
+    "wandb>=0.21.4",
 ]

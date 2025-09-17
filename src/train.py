@@ -4,6 +4,9 @@ uv run src/train.py --data_dir data --model_name openai/whisper-small --output_d
 
 To upload the model to the hub:
 uv run hf upload --repo-type model whisper-heb-ipa ./whisper-heb-ipa
+
+To use with wandb:
+uv run wandb login
 """
 
 import argparse
@@ -28,6 +31,7 @@ parser.add_argument("--output_dir", type=str, default="./whisper-heb-ipa")
 parser.add_argument("--batch_size", type=int, default=16)
 parser.add_argument("--learning_rate", type=float, default=1e-5)
 parser.add_argument("--max_steps", type=int, default=1000)
+parser.add_argument("--report_to", type=str, default="tensorboard", choices=["wandb", "tensorboard"])
 args = parser.parse_args()
 
 @dataclass
@@ -135,6 +139,7 @@ def main():
         metric_for_best_model="wer",
         greater_is_better=False,
         push_to_hub=False,
+        report_to=args.report_to,
     )
     
     # Trainer
