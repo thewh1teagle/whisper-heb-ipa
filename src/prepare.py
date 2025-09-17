@@ -1,6 +1,7 @@
 """
 wget https://huggingface.co/datasets/thewh1teagle/ILSpeech/resolve/main/speaker1/ilspeech_speaker1_v1.7z
 wget https://huggingface.co/datasets/thewh1teagle/ILSpeech/resolve/main/speaker2/ilspeech_speaker2_v1.7z
+sudo apt install p7zip-full -y
 7z x ilspeech_speaker1_v1.7z
 7z x ilspeech_speaker2_v1.7z
 

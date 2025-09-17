@@ -1,6 +1,6 @@
 # whisper-heb-ipa
 
-Hebrew speech recognition using a fine-tuned Whisper Hebrew IPA model.
+Transcribe Hebrew speech into IPA using a fine-tuned Whisper model.
 
 ## Data preparation
 
@@ -16,6 +16,23 @@ See `src/infer.py` for inference.
 
 
 The model is fine-tuned on the ILSpeech dataset.
+
+## Monitor GPU
+
+```console
+uv pip install nvitop
+uv run nvitop
+```
+
+## Monitor training progress
+
+Either use wandb or tensorboard.
+
+with tensorboard:
+
+```console
+uv run tensorboard --logdir whisper-heb-ipa
+```
 
 ## References
 
