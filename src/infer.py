@@ -1,65 +1,97 @@
+
 """
 Usage:
-wget https://github.com/thewh1teagle/phonikud-chatterbox/releases/download/asset-files-v1/female1.wav
+wget https://github.com/thewh1teagle/phonikud-chatterbox/releases/download/asset-files-v1/female1.wav -O example1.wav
 
 # Run with default HF model
 uv run src/infer.py
 
 # Or run with local checkpoint
-uv run src/infer.py --model_name ./whisper-heb-ipa/checkpoint-200
+uv run src/infer.py --model ./whisper-heb-ipa/checkpoint-600
 
 # Or with whisper small
-uv run src/infer.py --model_name openai/whisper-small
+uv run src/infer.py --model openai/whisper-small
 """
 
-import argparse
-import numpy as np
+
+import torch
 from transformers import pipeline
 import gradio as gr
-import librosa
+import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--model_name", 
-    type=str, 
-    default="thewh1teagle/whisper-heb-ipa",
-    help="Model name on Hugging Face hub or path to local checkpoint"
-)
-args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser(description="Whisper Transcription Demo")
+    parser.add_argument(
+        "--model", 
+        type=str, 
+        default="openai/whisper-small",
+        help="Model name or path for Whisper (default: openai/whisper-small)"
+    )
+    args = parser.parse_args()
+    
+    MODEL_NAME = args.model
+    BATCH_SIZE = 8
 
-# Force task to avoid HFValidationError on local checkpoints
-pipe = pipeline(
-    task="automatic-speech-recognition",
-    model=args.model_name,
-    generate_kwargs={"language": "he"}
-)
+    device = 0 if torch.cuda.is_available() else "cpu"
 
-def transcribe(audio):
-    if audio is None:
-        return ""
-    sr, data = audio
-    # Ensure float32 for librosa
-    data = np.array(data).astype(np.float32)
+    pipe = pipeline(
+        task="automatic-speech-recognition",
+        model=MODEL_NAME,
+        chunk_length_s=30,
+        device=device,
+    )
 
-    # Resample to 16k for Whisper
-    if sr != 16000:
-        data = librosa.resample(data, orig_sr=sr, target_sr=16000)
-        sr = 16000
 
-    # Limit to 30s
-    max_len = sr * 30
-    if len(data) > max_len:
-        data = data[:max_len]
+    def transcribe(file, task):
+        outputs = pipe(file, batch_size=BATCH_SIZE, generate_kwargs={"task": task})
+        text = outputs["text"]
+        return text
 
-    result = pipe({"array": data, "sampling_rate": sr})
-    return result["text"]
+    demo = gr.Blocks()
 
-iface = gr.Interface(
-    fn=transcribe, 
-    inputs=gr.Audio(sources=["microphone", "upload"], type="numpy"),
-    outputs=gr.Textbox(lines=10, max_lines=20, show_copy_button=True),
-    title="Whisper Hebrew IPA",
-    description="Realtime demo for Hebrew speech recognition using a fine-tuned Whisper Hebrew IPA model.",
-)
+    mic_transcribe = gr.Interface(
+        fn=transcribe,
+        inputs=[
+            gr.Audio(sources=["microphone", "upload"], type="filepath"),
+            gr.Radio(["transcribe", "translate"], label="Task", value="transcribe"),
+        ],
+        outputs="text",
+        theme="huggingface",
+        title="Whisper Demo: Transcribe Audio",
+        description=(
+            "Transcribe long-form microphone or audio inputs with the click of a button! Demo uses the"
+            f" checkpoint [{MODEL_NAME}](https://huggingface.co/{MODEL_NAME}) and 🤗 Transformers to transcribe audio files"
+            " of arbitrary length."
+        ),
+        allow_flagging="never",
+    )
 
-iface.launch()
+    file_transcribe = gr.Interface(
+        fn=transcribe,
+        inputs=[
+            gr.Audio(sources=["upload"], label="Audio file", type="filepath"),
+            gr.Radio(["transcribe", "translate"], label="Task", value="transcribe"),
+        ],
+        outputs="text",
+        theme="huggingface",
+        title="Whisper Demo: Transcribe Audio",
+        description=(
+            "Transcribe long-form microphone or audio inputs with the click of a button! Demo uses the"
+            f" checkpoint [{MODEL_NAME}](https://huggingface.co/{MODEL_NAME}) and 🤗 Transformers to transcribe audio files"
+            " of arbitrary length."
+        ),
+        examples=[
+            ["./example1.wav", "transcribe"],
+        ],
+        cache_examples=True,
+        allow_flagging="never",
+    )
+
+    with demo:
+        gr.TabbedInterface([file_transcribe, mic_transcribe], ["Transcribe Audio File", "Transcribe Microphone"])
+
+    demo.launch()
+
+
+if __name__ == "__main__":
+    main()

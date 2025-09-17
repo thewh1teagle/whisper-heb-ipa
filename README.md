@@ -51,6 +51,7 @@ uv run wandb sync ./whisper-heb-ipa
 
 - ivrit.ai whisper turbo https://huggingface.co/ivrit-ai/whisper-large-v3-turbo/tree/main
 - huggingface how to fine tune whisper https://huggingface.co/blog/fine-tune-whisper
+- https://medium.com/@balaragavesh/fine-tuning-whisper-to-predict-phonemes-from-audio-using-hugging-face-transformers-babbb46a9f05
 
 ## Gotchas
 
