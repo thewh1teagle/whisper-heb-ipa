@@ -25,3 +25,4 @@ dataset_cache/
 wandb/
 .gradio/
 !example1.wav
+whisper-heb-ipa-ct2/

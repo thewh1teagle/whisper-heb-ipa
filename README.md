@@ -60,6 +60,18 @@ uv run hf download --repo-type dataset thewh1teagle/whisper-heb-ipa-dataset --lo
 uv run hf upload --repo-type model thewh1teagle/whisper-heb-ipa ./whisper-heb-ipa/checkpoint-9000
 ```
 
+## Convert to CTransalte2
+
+```console
+git clone https://huggingface.co/thewh1teagle/whisper-heb-ipa
+uv pip install 'ctranslate2>=4.6.0'
+uv run ct2-transformers-converter \
+    --model ./whisper-heb-ipa \
+    --output_dir ./whisper-heb-ipa-ct2 \
+    --quantization int8_float16
+uv run hf upload --repo-type model thewh1teagle/whisper-heb-ipa-ct2 ./whisper-heb-ipa-ct2
+```
+
 ## References
 
 - ivrit.ai whisper turbo https://huggingface.co/ivrit-ai/whisper-large-v3-turbo/tree/main
