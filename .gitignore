@@ -26,3 +26,10 @@ wandb/
 .gradio/
 !example1.wav
 whisper-heb-ipa-ct2/
+saspeech_data/
+saspeech_data_cache/
+ilspeech_data/
+ilspeech_data_cache/
+saspeech_automatic/
+saspeech_manual/
+saspeech_manual_v2/

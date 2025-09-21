@@ -2,13 +2,45 @@
 
 Transcribe Hebrew speech into IPA using a fine-tuned Whisper model.
 
-## Data preparation
+## Data preparation (SASpeech manual v2) ⭐
 
-See `src/prepare.py` for data preparation.
+```console
+# Prepare repository on saspeech1 branch
+git clone https://github.com/thewh1teagle/whisper-heb-ipa -b saspeech1
 
-## Training
+# Download data
+wget https://huggingface.co/datasets/thewh1teagle/saspeech/resolve/main/saspeech_manual/saspeech_manual_v2.7z
+wget https://huggingface.co/datasets/thewh1teagle/saspeech/resolve/main/saspeech_automatic/saspeech_automatic.7z
+
+# Extract data
+sudo apt install p7zip-full -y
+7z x saspeech_manual_v2.7z
+7z x saspeech_automatic.7z
+
+# Convert to LJSpeech format
+uv run src/prepare_ljspeech.py --input_path saspeech_automatic/metadata.csv --output_path saspeech_automatic/metadata1.csv
+uv run src/prepare_ljspeech.py --input_path saspeech_manual/metadata.csv --output_path saspeech_manual/metadata1.csv
+
+# Rename metadata
+mv saspeech_automatic/metadata.csv saspeech_automatic/metadata.old.csv
+mv saspeech_manual/metadata.csv saspeech_manual/metadata.old.csv
+mv saspeech_automatic/metadata1.csv saspeech_automatic/metadata.csv
+mv saspeech_manual/metadata1.csv saspeech_manual/metadata.csv
+
+# Optional: combine datasets to one folder
+uv run src/prepare.py --input_folder saspeech_manual saspeech_automatic --output_folder saspeech_data/
+```
+
+## Training 
 
 See `src/train.py` for training.
+
+Example training ⭐
+
+```console
+uv run src/train.py ... --data_dir saspeech_data/ --dataset_cache_path ./saspeech_data_cache
+uv run src/train.py ... --data_dir ilspeech_data/ --dataset_cache_path ./ilspeech_data_cache
+```
 
 ## Inference
 
