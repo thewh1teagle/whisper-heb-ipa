@@ -2,6 +2,8 @@
 
 Transcribe Hebrew speech into IPA using a fine-tuned Whisper model.
 
+This project is part of the [phonikud.github.io](https://phonikud.github.io) project.
+
 ## Data preparation
 
 See `src/prepare.py` for data preparation.
