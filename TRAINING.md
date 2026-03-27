@@ -38,6 +38,16 @@ Train:
 
 See `src/train.py` for training.
 
+### Resume from checkpoint
+
+```console
+./scripts/train_findtune.sh --resume_from_checkpoint ./whisper-heb-ipa/checkpoint-200
+```
+
+### Data loading
+
+Audio is processed on-the-fly (no preprocessing cache). Benchmarked at ~400ms per batch of 16 on the training machine, vs ~4000ms per GPU step — dataloader is not a bottleneck. Uses `dataloader_num_workers=4` by default so batches are prefetched in parallel with GPU training.
+
 ## Monitor GPU
 
 ```console
