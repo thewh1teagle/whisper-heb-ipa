@@ -11,7 +11,7 @@ def get_args():
     parser.add_argument("--output_dir", type=str, default="./whisper-heb-ipa")
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--learning_rate", type=float, default=1e-5)
-    parser.add_argument("--max_steps", type=int, default=1000)
+    parser.add_argument("--num_train_epochs", type=int, default=2)
     parser.add_argument("--report_to", type=str, default="tensorboard", choices=["wandb", "tensorboard"])
     parser.add_argument("--eval_batch_size", type=int, default=8)
     parser.add_argument("--eval_steps", type=int, default=200)

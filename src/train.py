@@ -49,7 +49,7 @@ def main():
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.eval_batch_size,
         learning_rate=args.learning_rate,
-        max_steps=args.max_steps,
+        num_train_epochs=args.num_train_epochs,
         # Gradient checkpointing is disabled to fix a "backward through the graph a second time" RuntimeError.
         # This error occurs when gradient checkpointing is enabled alongside a custom data collator.
         gradient_checkpointing=False,
