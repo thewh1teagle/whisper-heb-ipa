@@ -5,7 +5,7 @@ Setup:
     ./scripts/train_bench.sh
 
 Usage:
-    uv run scripts/benchmark.py --checkpoint whisper-heb-ipa/checkpoint-1000 --data_dir ilspeech_speaker2_v1
+    uv run scripts/benchmark.py --checkpoint whisper-heb-ipa/checkpoint-1000
 """
 
 import argparse
@@ -43,9 +43,10 @@ def stress_error_rate(refs, hyps):
         hyp_words = hyp.split()
         for rw, hw in zip(ref_words, hyp_words):
             total += 1
-            if STRESS in rw or STRESS in hw:
-                if rw.index(STRESS) if STRESS in rw else -1 != hw.index(STRESS) if STRESS in hw else -1:
-                    errors += 1
+            ref_stress = rw.index(STRESS) if STRESS in rw else -1
+            hyp_stress = hw.index(STRESS) if STRESS in hw else -1
+            if ref_stress != hyp_stress:
+                errors += 1
     return errors / total if total else 0.0
 
 
@@ -65,7 +66,7 @@ def main():
     parser.add_argument("--checkpoint", type=str, required=True, help="Path to Whisper checkpoint")
     parser.add_argument("--data_dir", type=str, default="ilspeech_speaker2_v1")
     parser.add_argument("--wav_dir", type=str, default="wav")
-    parser.add_argument("--metadata_ipa", type=str, default="metadata_ipa.csv")
+    parser.add_argument("--metadata_ipa", type=str, default="metadata.csv")
     parser.add_argument("--max_samples", type=int, default=100)
     parser.add_argument("--save", type=str, default=None, help="Save report to file")
     args = parser.parse_args()
