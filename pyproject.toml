@@ -15,6 +15,7 @@ dependencies = [
     "pandas>=2.3.2",
     "pydub>=0.25.1",
     "tensorboard>=2.20.0",
+    "setuptools<81",  # tensorboard needs pkg_resources, removed in setuptools 82
     "torch>=2.11.0",
     "transformers>=4.52.0",
     "wandb>=0.21.4",
