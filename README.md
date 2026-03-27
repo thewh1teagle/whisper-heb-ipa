@@ -14,12 +14,3 @@ See `src/infer.py` for inference.
 
 See [TRAINING.md](TRAINING.md).
 
-## Gotchas
-
-- https://huggingface.co/openai/whisper-large-v3/discussions/201
-- To infer on macOS:
-
-```console
-uv pip uninstall torchcodec
-uv run --no-sync src/infer.py
-```

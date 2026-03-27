@@ -84,3 +84,13 @@ See `scripts/upload_model.sh`.
 ## Convert to CTranslate2
 
 See `scripts/export_ct2.sh`.
+
+## Gotchas
+
+- https://huggingface.co/openai/whisper-large-v3/discussions/201
+- To infer on macOS:
+
+```console
+uv pip uninstall torchcodec
+uv run --no-sync src/infer.py
+```
