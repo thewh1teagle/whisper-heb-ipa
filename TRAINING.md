@@ -6,6 +6,12 @@ See `src/prepare.py` for data preparation.
 
 ## Training on SASpeech
 
+Check total audio duration:
+
+```console
+soxi -DT ./saspeech_automatic/wav/*.wav | awk '{print $1/60 " minutes"}'
+```
+
 Download and extract:
 
 ```console
