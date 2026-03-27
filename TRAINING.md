@@ -46,7 +46,7 @@ See `src/train.py` for training.
 
 ### Data loading
 
-Audio is processed on-the-fly (no preprocessing cache). Benchmarked at ~400ms per batch of 16 on the training machine, vs ~4000ms per GPU step — dataloader is not a bottleneck. Uses `dataloader_num_workers=4` by default so batches are prefetched in parallel with GPU training.
+Audio is processed on-the-fly (no preprocessing cache). Benchmarked at ~400ms per batch of 16 on the training machine, vs ~4000ms per GPU step — dataloader is not a bottleneck. Uses `dataloader_num_workers=0` (the HuggingFace Audio column is not fork-safe with multiple workers).
 
 ## Monitor GPU
 

@@ -17,6 +17,6 @@ def get_args():
     parser.add_argument("--eval_steps", type=int, default=200)
     parser.add_argument("--save_steps", type=int, default=200)
     parser.add_argument("--logging_steps", type=int, default=25)
-    parser.add_argument("--dataloader_num_workers", type=int, default=4)
+    parser.add_argument("--dataloader_num_workers", type=int, default=0)  # HuggingFace Audio column is not fork-safe with workers > 0
     parser.add_argument("--fp16", action=argparse.BooleanOptionalAction, default=True)
     return parser.parse_args()
