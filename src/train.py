@@ -1,9 +1,9 @@
 """
 To train the model:
-uv run src/train.py --data_dir data --model_name openai/whisper-small --output_dir whisper-heb-ipa --batch_size 16 --learning_rate 1e-5 --max_steps 1000
+uv run src/train.py --data_dir data --model_name ivrit-ai/whisper-large-v3-turbo --output_dir whisper-heb-ipa --batch_size 16 --learning_rate 1e-5 --max_steps 1000
 OR
 export WANDB_PROJECT=whisper-heb-ipa
-uv run src/train.py --data_dir data --model_name openai/whisper-small --output_dir whisper-heb-ipa --batch_size 16 --learning_rate 1e-5 --max_steps 90000 --report_to wandb
+uv run src/train.py --data_dir data --model_name ivrit-ai/whisper-large-v3-turbo --output_dir whisper-heb-ipa --batch_size 16 --learning_rate 1e-5 --max_steps 90000 --report_to wandb
 
 To upload the model to the hub:
 uv run hf upload --repo-type model whisper-heb-ipa ./whisper-heb-ipa
@@ -12,124 +12,31 @@ To use with wandb:
 uv run wandb login
 """
 
-import argparse
-import datasets
-import pandas as pd
-import torch
-from pathlib import Path
-from datasets import Dataset, Audio
 from transformers import (
-    WhisperProcessor, 
+    WhisperProcessor,
     WhisperForConditionalGeneration,
     Seq2SeqTrainingArguments,
     Seq2SeqTrainer
 )
-from dataclasses import dataclass
-from typing import Any, Dict, List, Union
-import evaluate
-import os
+from config import get_args
+from constants import LANGUAGE, GENERATION_MAX_LENGTH
+from eval import compute_metrics
+from data import DataCollatorSpeechSeq2SeqWithPadding, load_dataset_from_csv
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--data_dir", type=str, required=True)
-parser.add_argument("--model_name", type=str, default="openai/whisper-small")
-parser.add_argument("--output_dir", type=str, default="./whisper-heb-ipa")
-parser.add_argument("--batch_size", type=int, default=16)
-parser.add_argument("--learning_rate", type=float, default=1e-5)
-parser.add_argument("--max_steps", type=int, default=1000)
-parser.add_argument("--report_to", type=str, default="tensorboard", choices=["wandb", "tensorboard"])
-parser.add_argument("--dataset_cache_path", type=str, default="./dataset_cache")
-args = parser.parse_args()
-
-@dataclass
-class DataCollatorSpeechSeq2SeqWithPadding:
-    processor: Any
-    decoder_start_token_id: int
-
-    def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> Dict[str, torch.Tensor]:
-        input_features = [{"input_features": feature["input_features"]} for feature in features]
-        batch = self.processor.feature_extractor.pad(input_features, return_tensors="pt")
-
-        label_features = [{"input_ids": feature["labels"]} for feature in features]
-        labels_batch = self.processor.tokenizer.pad(label_features, return_tensors="pt")
-
-        labels = labels_batch["input_ids"].masked_fill(labels_batch.attention_mask.ne(1), -100)
-        if (labels[:, 0] == self.decoder_start_token_id).all().cpu().item():
-            labels = labels[:, 1:]
-
-        batch["labels"] = labels
-        return batch
-
-def load_dataset_from_csv(data_dir):
-    # Read metadata
-    data_path = Path(data_dir)
-    df = pd.read_csv(data_path / "metadata.csv", sep="|", header=None, names=["filename", "text"])
-    
-    # Create audio paths
-    audio_paths = [str(data_path / "wav" / f"{filename}.wav") for filename in df["filename"]]
-    
-    # Create dataset
-    dataset = Dataset.from_dict({
-        "audio": audio_paths,
-        "text": df["text"].tolist()
-    })
-    
-    # Cast audio column
-    dataset = dataset.cast_column("audio", Audio(sampling_rate=16000))
-    
-    # Split train/test (80/20)
-    dataset = dataset.train_test_split(test_size=0.2)
-    return dataset
-
-def prepare_dataset(batch, processor):
-    audio = batch["audio"]
-    batch["input_features"] = processor.feature_extractor(audio["array"], sampling_rate=audio["sampling_rate"]).input_features[0]
-    batch["labels"] = processor.tokenizer(batch["text"]).input_ids
-    return batch
-
-def compute_metrics(pred, tokenizer):
-    pred_ids = pred.predictions
-    label_ids = pred.label_ids
-    
-    # convert -100 (ignored) tokens into pad tokens for decoding
-    label_ids[label_ids == -100] = tokenizer.pad_token_id
-
-    pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
-    label_str = tokenizer.batch_decode(label_ids, skip_special_tokens=True)
-
-    wer_metric = evaluate.load("wer")
-    cer_metric = evaluate.load("cer")
-
-    wer_score = 100 * wer_metric.compute(predictions=pred_str, references=label_str)
-    cer_score = 100 * cer_metric.compute(predictions=pred_str, references=label_str)
-
-    return {"wer": wer_score, "cer": cer_score}
 
 def main():
+    args = get_args()
     # Load processor and model
-    processor = WhisperProcessor.from_pretrained(args.model_name, language="Hebrew", task="transcribe")
+    processor = WhisperProcessor.from_pretrained(args.model_name, language=LANGUAGE.capitalize(), task="transcribe")
     model = WhisperForConditionalGeneration.from_pretrained(args.model_name)
     
     # Set generation config
-    model.generation_config.language = "hebrew"
+    model.generation_config.language = LANGUAGE
     model.generation_config.task = "transcribe"
     model.generation_config.forced_decoder_ids = None # Deprecated
     
-    # Load dataset from cache
-    if Path(args.dataset_cache_path).exists():
-        dataset = datasets.load_from_disk(args.dataset_cache_path)
-    else:
-        # Load dataset
-        dataset = load_dataset_from_csv(args.data_dir)
-    
-        # Prepare dataset
-        dataset = dataset.map(
-            lambda batch: prepare_dataset(batch, processor),
-            remove_columns=dataset["train"].column_names,
-            num_proc=min(6, os.cpu_count()) # limit to 16 processes
-        )
+    dataset = load_dataset_from_csv(args.data_dir, args.metadata, args.wav_dir, args.max_eval_samples)
 
-        dataset.save_to_disk(args.dataset_cache_path)
-    
     # Data collator
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(
         processor=processor,
@@ -140,24 +47,26 @@ def main():
     training_args = Seq2SeqTrainingArguments(
         output_dir=args.output_dir,
         per_device_train_batch_size=args.batch_size,
-        per_device_eval_batch_size=8,
+        per_device_eval_batch_size=args.eval_batch_size,
         learning_rate=args.learning_rate,
         max_steps=args.max_steps,
         # Gradient checkpointing is disabled to fix a "backward through the graph a second time" RuntimeError.
         # This error occurs when gradient checkpointing is enabled alongside a custom data collator.
         gradient_checkpointing=False,
-        fp16=True,
+        fp16=args.fp16,
         eval_strategy="steps",
-        eval_steps=200,
-        save_steps=200,
-        logging_steps=25,
+        eval_steps=args.eval_steps,
+        save_steps=args.save_steps,
+        logging_steps=args.logging_steps,
         predict_with_generate=True,
-        generation_max_length=225,
+        generation_max_length=GENERATION_MAX_LENGTH,
         load_best_model_at_end=True,
         metric_for_best_model="wer",
         greater_is_better=False,
+        remove_unused_columns=False,
         push_to_hub=False,
         report_to=args.report_to,
+        dataloader_num_workers=args.dataloader_num_workers,
     )
     
     # Trainer
@@ -165,10 +74,10 @@ def main():
         args=training_args,
         model=model,
         train_dataset=dataset["train"],
-        eval_dataset=dataset["test"],
+        eval_dataset=dataset["eval"],
         data_collator=data_collator,
         compute_metrics=lambda pred: compute_metrics(pred, processor.tokenizer),
-        tokenizer=processor,
+        processing_class=processor,
     )
     
     # Train

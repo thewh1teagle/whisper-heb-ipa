@@ -9,6 +9,9 @@ __pycache__/
 .ruff_cache/
 
 *.7z
+*.onnx
+*.tar.gz
+saspeech_gold_standard/
 ilspeech_speaker1_v1/
 data/
 ilspeech_speaker2_v1/
