@@ -31,3 +31,4 @@ wandb/
 whisper-heb-ipa-ct2/
 checkpoints/
 dataset/
+checkpoints-backups/

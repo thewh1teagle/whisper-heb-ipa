@@ -17,7 +17,8 @@ from transformers import (
     WhisperProcessor,
     WhisperForConditionalGeneration,
     Seq2SeqTrainingArguments,
-    Seq2SeqTrainer
+    Seq2SeqTrainer,
+    EarlyStoppingCallback,
 )
 from config import get_args
 from constants import LANGUAGE, GENERATION_MAX_LENGTH
@@ -39,7 +40,7 @@ def main():
     model.generation_config.task = "transcribe"
     model.generation_config.forced_decoder_ids = None # Deprecated
     
-    dataset = load_dataset_from_csv(args.data_dir, processor.tokenizer, args.metadata, args.wav_dir, args.max_eval_samples)
+    dataset = load_dataset_from_csv(args.data_dir, processor.tokenizer, args.train_metadata, args.eval_metadata, args.wav_dir)
 
     # Data collator
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(
@@ -54,6 +55,7 @@ def main():
         per_device_eval_batch_size=args.eval_batch_size,
         learning_rate=args.learning_rate,
         num_train_epochs=args.num_train_epochs,
+        max_steps=args.max_steps,
         # Gradient checkpointing is disabled to fix a "backward through the graph a second time" RuntimeError.
         # This error occurs when gradient checkpointing is enabled alongside a custom data collator.
         gradient_checkpointing=False,
@@ -86,6 +88,9 @@ def main():
         processing_class=processor,
     )
     
+    if args.early_stopping_patience > 0:
+        trainer.add_callback(EarlyStoppingCallback(early_stopping_patience=args.early_stopping_patience))
+
     # Train
     trainer.train()
     

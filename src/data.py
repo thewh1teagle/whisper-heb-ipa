@@ -2,7 +2,7 @@ import pandas as pd
 import torch
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 from datasets import Dataset, Audio
 from constants import SAMPLING_RATE, MAX_LABEL_TOKENS
 
@@ -32,9 +32,15 @@ class DataCollatorSpeechSeq2SeqWithPadding:
         return batch
 
 
-def load_dataset_from_csv(data_dir, tokenizer, metadata="metadata.csv", wav_dir="wav", max_eval_samples=150):
-    data_path = Path(data_dir)
-    df = pd.read_csv(data_path / metadata, sep="|", header=None, names=["filename", "text"])
+def _load_split(data_path, metadata, wav_dir, tokenizer):
+    raw = pd.read_csv(data_path / metadata, sep="|", header=None)
+    if raw.shape[1] == 3:
+        # id|ipa|text — use ipa as training target
+        raw.columns = ["filename", "text", "_text_orig"]
+        raw = raw[["filename", "text"]]
+    else:
+        raw.columns = ["filename", "text"]
+    df = raw
 
     keep_rows = []
     skipped = 0
@@ -46,17 +52,20 @@ def load_dataset_from_csv(data_dir, tokenizer, metadata="metadata.csv", wav_dir=
             skipped += 1
 
     if skipped:
-        print(f"Skipped {skipped} overlong examples (> {MAX_LABEL_TOKENS} label tokens)")
+        print(f"Skipped {skipped} overlong examples in {metadata} (> {MAX_LABEL_TOKENS} label tokens)")
 
     if not keep_rows:
-        raise ValueError("All examples were filtered out as overlong.")
+        raise ValueError(f"All examples in {metadata} were filtered out as overlong.")
 
     df = pd.DataFrame(keep_rows)
     audio_paths = [str(data_path / wav_dir / f"{filename}.wav") for filename in df["filename"]]
-    dataset = Dataset.from_dict({
-        "audio": audio_paths,
-        "text": df["text"].tolist()
-    })
-    dataset = dataset.cast_column("audio", Audio(sampling_rate=SAMPLING_RATE))
-    splits = dataset.train_test_split(test_size=max_eval_samples, shuffle=True)
-    return {"train": splits["train"], "eval": splits["test"]}
+    dataset = Dataset.from_dict({"audio": audio_paths, "text": df["text"].tolist()})
+    return dataset.cast_column("audio", Audio(sampling_rate=SAMPLING_RATE))
+
+
+def load_dataset_from_csv(data_dir, tokenizer, train_metadata="metadata_train.csv", eval_metadata="metadata_test.csv", wav_dir="wav"):
+    data_path = Path(data_dir)
+    return {
+        "train": _load_split(data_path, train_metadata, wav_dir, tokenizer),
+        "eval": _load_split(data_path, eval_metadata, wav_dir, tokenizer),
+    }

@@ -4,14 +4,15 @@ import argparse
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, required=True)
-    parser.add_argument("--metadata", type=str, default="metadata.csv")
+    parser.add_argument("--train_metadata", type=str, default="metadata_train.csv")
+    parser.add_argument("--eval_metadata", type=str, default="metadata_test.csv")
     parser.add_argument("--wav_dir", type=str, default="wav")
-    parser.add_argument("--max_eval_samples", type=int, default=150)
     parser.add_argument("--model_name", type=str, default="ivrit-ai/whisper-large-v3-turbo")
     parser.add_argument("--output_dir", type=str, default="./checkpoints/whisper-heb-ipa")
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--learning_rate", type=float, default=1e-5)
     parser.add_argument("--num_train_epochs", type=int, default=2)
+    parser.add_argument("--max_steps", type=int, default=-1)
     parser.add_argument("--report_to", type=str, default="tensorboard", choices=["wandb", "tensorboard"])
     parser.add_argument("--eval_batch_size", type=int, default=8)
     parser.add_argument("--eval_steps", type=int, default=200)
@@ -21,4 +22,5 @@ def get_args():
     parser.add_argument("--dataloader_num_workers", type=int, default=0)  # HuggingFace Audio column is not fork-safe with workers > 0
     parser.add_argument("--fp16", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--flash_attn", action="store_true", default=False, help="Use Flash Attention 2 (requires flash-attn package)")
+    parser.add_argument("--early_stopping_patience", type=int, default=0, help="Early stopping patience (0 = disabled)")
     return parser.parse_args()
