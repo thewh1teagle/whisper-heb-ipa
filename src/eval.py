@@ -14,7 +14,7 @@ def compute_metrics(pred, tokenizer):
     wer_metric = evaluate.load("wer")
     cer_metric = evaluate.load("cer")
 
-    wer_score = 100 * wer_metric.compute(predictions=pred_str, references=label_str)
-    cer_score = 100 * cer_metric.compute(predictions=pred_str, references=label_str)
+    wer_score = wer_metric.compute(predictions=pred_str, references=label_str)
+    cer_score = cer_metric.compute(predictions=pred_str, references=label_str)
 
     return {"wer": wer_score, "cer": cer_score}

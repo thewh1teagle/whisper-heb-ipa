@@ -22,6 +22,7 @@ from tqdm import tqdm
 
 
 TIMESTAMP_RE = re.compile(r"<\|[\d.]+\|>")
+ALLOWED_PHONEME_CHARS = set("abdefhijklmnoprstuvwzɡʁʃʒʔˈχ .,!?-\"'")
 
 
 def clean_transcript(text):
@@ -37,6 +38,8 @@ def main():
     parser.add_argument("input_dir", type=str, help="Path to downloaded dataset (dataset/crowd-recital-whisper-training)")
     parser.add_argument("output_dir", type=str, help="Output directory (e.g. dataset/crowd-recital)")
     parser.add_argument("--workers", type=int, default=os.cpu_count(), help="Phonemization threads (default: cpu count)")
+    parser.add_argument("--filter_allowed", action="store_true", default=True, help="Filter out rows with non-IPA chars in phonemes (default: True)")
+    parser.add_argument("--no_filter_allowed", dest="filter_allowed", action="store_false")
     args = parser.parse_args()
 
     out = Path(args.output_dir)
@@ -88,12 +91,18 @@ def main():
         file_id, text = row
         return file_id, thread_local[tid].phonemize(text)
 
+    filtered = 0
     with open(out / "metadata_ipa.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter="|")
         with ThreadPoolExecutor(max_workers=args.workers) as executor:
             for file_id, phonemes in tqdm(executor.map(phonemize, rows), total=len(rows)):
+                if args.filter_allowed and not all(c in ALLOWED_PHONEME_CHARS for c in phonemes):
+                    filtered += 1
+                    continue
                 writer.writerow([file_id, phonemes])
 
+    if filtered:
+        print(f"Filtered {filtered} rows with non-IPA characters", file=sys.stderr)
     print(f"Done. Written to {out}")
 
 
