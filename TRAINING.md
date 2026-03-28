@@ -9,27 +9,28 @@ See `src/prepare.py` for data preparation.
 Check total audio duration:
 
 ```console
-soxi -DT ./saspeech_automatic/wav/*.wav | awk '{print $1/60 " minutes"}'
+soxi -DT ./dataset/saspeech_automatic/wav/*.wav | awk '{print $1/60 " minutes"}'
 ```
 
-Download and extract:
+Download and extract into `dataset/`:
 
 ```console
-wget https://openslr.trmal.net/resources/134/saspeech_gold_standard_v1.0.tar.gz
-tar xf saspeech_gold_standard_v1.0.tar.gz
+mkdir -p dataset
+wget https://openslr.trmal.net/resources/134/saspeech_gold_standard_v1.0.tar.gz -P dataset
+tar xf dataset/saspeech_gold_standard_v1.0.tar.gz -C dataset/
 ```
 
 Clean and prepare the transcripts (strips nikud, normalizes punctuation):
 
 ```console
-uv run scripts/prepare_saspeech.py saspeech_gold_standard/metadata.csv > saspeech_gold_standard/metadata_clean.csv
+uv run scripts/prepare_saspeech.py dataset/saspeech_gold_standard/metadata.csv > dataset/saspeech_gold_standard/metadata_clean.csv
 ```
 
 Phonemize (produces `metadata_ipa.csv` with `id|phonemes`):
 
 ```console
 wget https://huggingface.co/thewh1teagle/renikud/resolve/main/model.onnx -O renikud.onnx
-uv run scripts/phonemize.py renikud.onnx saspeech_gold_standard/metadata_clean.csv > saspeech_gold_standard/metadata_ipa.csv
+uv run scripts/phonemize.py renikud.onnx dataset/saspeech_gold_standard/metadata_clean.csv > dataset/saspeech_gold_standard/metadata_ipa.csv
 ```
 
 Train:
@@ -37,7 +38,7 @@ Train:
 ```console
 ./scripts/train_findtune.sh
 # pass extra args as needed, e.g.:
-./scripts/train_findtune.sh --model_name ivrit-ai/whisper-large-v3-turbo --max_steps 5000
+./scripts/train_findtune.sh --model_name ivrit-ai/whisper-large-v3-turbo --num_train_epochs 6
 ```
 
 ## Training
@@ -47,7 +48,7 @@ See `src/train.py` for training.
 ### Resume from checkpoint
 
 ```console
-./scripts/train_findtune.sh --resume_from_checkpoint ./whisper-heb-ipa/checkpoint-200
+./scripts/train_findtune.sh --resume_from_checkpoint ./checkpoints/whisper-heb-ipa/checkpoint-200
 ```
 
 ### Data loading
@@ -67,7 +68,7 @@ Either use wandb or tensorboard.
 with tensorboard:
 
 ```console
-uvx tensorboard --logdir whisper-heb-ipa
+uvx tensorboard --logdir checkpoints/whisper-heb-ipa
 ```
 
 with wandb:
@@ -80,7 +81,7 @@ uv run src/train.py --report_to wandb # it will print the URL to the wandb dashb
 ## Sync tensorboard to wandb
 
 ```console
-uvx wandb sync ./whisper-heb-ipa
+uvx wandb sync ./checkpoints/whisper-heb-ipa
 ```
 
 ## Upload model to HuggingFace

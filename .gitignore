@@ -29,3 +29,5 @@ wandb/
 .gradio/
 !example1.wav
 whisper-heb-ipa-ct2/
+checkpoints/
+dataset/

@@ -8,7 +8,7 @@ def get_args():
     parser.add_argument("--wav_dir", type=str, default="wav")
     parser.add_argument("--max_eval_samples", type=int, default=150)
     parser.add_argument("--model_name", type=str, default="ivrit-ai/whisper-large-v3-turbo")
-    parser.add_argument("--output_dir", type=str, default="./whisper-heb-ipa")
+    parser.add_argument("--output_dir", type=str, default="./checkpoints/whisper-heb-ipa")
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--learning_rate", type=float, default=1e-5)
     parser.add_argument("--num_train_epochs", type=int, default=2)

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Union
 from datasets import Dataset, Audio
-from constants import SAMPLING_RATE
+from constants import SAMPLING_RATE, MAX_LABEL_TOKENS
 
 
 @dataclass
@@ -32,9 +32,26 @@ class DataCollatorSpeechSeq2SeqWithPadding:
         return batch
 
 
-def load_dataset_from_csv(data_dir, metadata="metadata.csv", wav_dir="wav", max_eval_samples=150):
+def load_dataset_from_csv(data_dir, tokenizer, metadata="metadata.csv", wav_dir="wav", max_eval_samples=150):
     data_path = Path(data_dir)
     df = pd.read_csv(data_path / metadata, sep="|", header=None, names=["filename", "text"])
+
+    keep_rows = []
+    skipped = 0
+    for _, row in df.iterrows():
+        label_len = len(tokenizer(row["text"]).input_ids)
+        if label_len <= MAX_LABEL_TOKENS:
+            keep_rows.append(row)
+        else:
+            skipped += 1
+
+    if skipped:
+        print(f"Skipped {skipped} overlong examples (> {MAX_LABEL_TOKENS} label tokens)")
+
+    if not keep_rows:
+        raise ValueError("All examples were filtered out as overlong.")
+
+    df = pd.DataFrame(keep_rows)
     audio_paths = [str(data_path / wav_dir / f"{filename}.wav") for filename in df["filename"]]
     dataset = Dataset.from_dict({
         "audio": audio_paths,

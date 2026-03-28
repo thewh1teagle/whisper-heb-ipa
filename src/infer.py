@@ -3,7 +3,7 @@ Usage:
 wget https://github.com/thewh1teagle/phonikud-chatterbox/releases/download/asset-files-v1/female1.wav -O audio.wav
 uv run src/infer.py audio.wav
 uv run src/infer.py audio.wav --model thewh1teagle/whisper-heb-ipa
-uv run src/infer.py audio.wav --model ./whisper-heb-ipa/checkpoint-600
+uv run src/infer.py audio.wav --model ./checkpoints/whisper-heb-ipa/checkpoint-600
 """
 
 import argparse
@@ -17,7 +17,7 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="thewh1teagle/whisper-heb-ipa",
+        default="./checkpoints/whisper-heb-ipa",
         help="Model name or path (default: thewh1teagle/whisper-heb-ipa)",
     )
     args = parser.parse_args()

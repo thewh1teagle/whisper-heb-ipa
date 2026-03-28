@@ -35,7 +35,7 @@ def main():
     model.generation_config.task = "transcribe"
     model.generation_config.forced_decoder_ids = None # Deprecated
     
-    dataset = load_dataset_from_csv(args.data_dir, args.metadata, args.wav_dir, args.max_eval_samples)
+    dataset = load_dataset_from_csv(args.data_dir, processor.tokenizer, args.metadata, args.wav_dir, args.max_eval_samples)
 
     # Data collator
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(
