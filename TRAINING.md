@@ -51,6 +51,24 @@ See `src/train.py` for training.
 ./scripts/train_findtune.sh --resume_from_checkpoint ./checkpoints/whisper-heb-ipa/checkpoint-200
 ```
 
+### Flash Attention 2
+
+Enables faster training and lower VRAM usage. Enable with `--flash_attn`:
+
+```console
+./scripts/train_findtune.sh --flash_attn
+```
+
+Install the wheel first:
+
+- **x86_64**: find prebuilt wheels at https://github.com/mjun0812/flash-attention-prebuild-wheels
+- **aarch64 (ARM)**: find prebuilt wheels at https://pypi.jetson-ai-lab.io/sbsa/cu130
+
+Validate installation:
+```console
+uv run python -c "import flash_attn; print(flash_attn.__version__)"
+```
+
 ### Data loading
 
 Audio is processed on-the-fly (no preprocessing cache). Benchmarked at ~400ms per batch of 16 on the training machine, vs ~4000ms per GPU step — dataloader is not a bottleneck. Uses `dataloader_num_workers=0` (the HuggingFace Audio column is not fork-safe with multiple workers).

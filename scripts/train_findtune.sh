@@ -4,5 +4,5 @@
 uv run src/train.py \
     --data_dir dataset/saspeech_gold_standard \
     --metadata metadata_ipa.csv \
-    --wav_dir wavs \
+    --wav_dir wav \
     "$@"

@@ -20,4 +20,5 @@ def get_args():
     parser.add_argument("--save_total_limit", type=int, default=3)
     parser.add_argument("--dataloader_num_workers", type=int, default=0)  # HuggingFace Audio column is not fork-safe with workers > 0
     parser.add_argument("--fp16", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--flash_attn", action="store_true", default=False, help="Use Flash Attention 2 (requires flash-attn package)")
     return parser.parse_args()

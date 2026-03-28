@@ -12,6 +12,7 @@ To use with wandb:
 uv run wandb login
 """
 
+import torch
 from transformers import (
     WhisperProcessor,
     WhisperForConditionalGeneration,
@@ -28,7 +29,10 @@ def main():
     args = get_args()
     # Load processor and model
     processor = WhisperProcessor.from_pretrained(args.model_name, language=LANGUAGE.capitalize(), task="transcribe")
-    model = WhisperForConditionalGeneration.from_pretrained(args.model_name)
+    model = WhisperForConditionalGeneration.from_pretrained(
+        args.model_name,
+        **({"attn_implementation": "flash_attention_2", "torch_dtype": torch.bfloat16} if args.flash_attn else {}),
+    )
     
     # Set generation config
     model.generation_config.language = LANGUAGE
@@ -53,7 +57,8 @@ def main():
         # Gradient checkpointing is disabled to fix a "backward through the graph a second time" RuntimeError.
         # This error occurs when gradient checkpointing is enabled alongside a custom data collator.
         gradient_checkpointing=False,
-        fp16=args.fp16,
+        fp16=args.fp16 and not args.flash_attn,
+        bf16=args.flash_attn,
         eval_strategy="steps",
         eval_steps=args.eval_steps,
         save_steps=args.save_steps,
